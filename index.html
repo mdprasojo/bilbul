@@ -39,7 +39,7 @@
     .pair-inner{display:flex;gap:6px}
 
     /* Calculator */
-    .calculator{width:100%;background:#222;border-radius:12px;padding:12px;color:#fff;min-width:100%;width:100%;background:#222;border-radius:12px;padding:12px;color:#fff;position:relative;overflow:hidden}
+    .calculator{width:100%;background:#222;border-radius:12px;padding:12px;color:#fff;min-width:100%;width:100%;background:#222;border-radius:12px;padding:12px;color:#fff}
     .calculator .display{height:48px;background:#333;border-radius:8px;margin-bottom:10px;padding:8px;font-size:24px;display:flex;align-items:center;justify-content:flex-end}
     .calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
     .calc-btn{padding:10px;border-radius:8px;border:none;background:#f1f1f1;color:#111;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
@@ -71,7 +71,7 @@
       .controls{width:100%}
       .controls input[type=number]{width:100%}
       .controls input[type=range]{width:100%}
-      #quizBox{flex-direction:column}
+      #quizBox{flex-direction:column !important; align-items:flex-start}
       #quizBox>div:first-child{width:100%}
       #quizBox>div:last-child{width:100%}
     }
@@ -189,7 +189,7 @@
         </div>
       </div>
 
-      <div id="quizBox" class="card hidden" style="margin-top:12px;display:flex;gap:12px;align-items:flex-start">
+      <div id="quizBox" class="card hidden" style="margin-top:12px;display:flex;flex-direction:column;gap:12px;align-items:flex-start">
         <div style="flex:1">
           <div id="quizContent"></div>
         </div>
