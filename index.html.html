@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Aplikasi Bilangan Bulat — Penjumlahan & Pengurangan</title>
+  <style>
+    :root{--bg:#f6f8fb;--card:#fff;--accent:#0b63d5;--pos:#2b7cff;--neg:#e24b4b;--highlight:rgba(255,206,84,0.28)}
+    *{box-sizing:border-box}
+    body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial; margin:0; background:var(--bg); color:#111}
+    header{background:linear-gradient(90deg,#0b63d5, #3a9be8); color:#fff; padding:18px 20px}
+    header h1{margin:0;font-size:18px}
+    .container{max-width:980px;margin:18px auto;padding:0 16px}
+    .tabs{display:flex;gap:8px;margin-bottom:16px}
+    .tab{background:var(--card);padding:10px 14px;border-radius:10px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+    .tab.active{outline:3px solid rgba(11,99,213,0.12)}
+    .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(12,32,80,0.06);margin-bottom:16px}
+    .flex{display:flex;gap:12px;align-items:center}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    label{font-size:14px}
+    .play-area{display:flex;gap:12px;flex-wrap:wrap}
+    .coins-area{flex:1;min-height:140px;border:2px dashed #e6eefc;border-radius:10px;padding:12px;position:relative;background:linear-gradient(180deg,#fff, #f7fbff)}
+    .coins-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+    .coin{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;box-shadow:0 2px 6px rgba(10,30,80,0.12);user-select:none;transition:transform 0.45s, background-color 1s, opacity 0.45s}
+    .coin.pos{background:var(--pos)}
+    .coin.neg{background:var(--neg)}
+    .coin.gray{opacity:0.35; outline:2px dashed #ccc; filter:grayscale(30%); transition:opacity 0.6s, outline-color 0.6s;}
+    .small{font-size:13px;opacity:0.95}
+    button.btn{background:var(--accent);color:#fff;padding:8px 12px;border:none;border-radius:8px;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid #ddd;color:#333;padding:8px;border-radius:8px}
+    button[disabled]{opacity:0.45;cursor:not-allowed}
+    .result{font-size:18px;font-weight:700}
+    .hidden{display:none}
+    .problem{margin-bottom:8px}
+    .quiz-list{display:flex;flex-direction:column;gap:8px}
+    .quiz-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:#fbfdff}
+    footer{font-size:13px;color:#555;text-align:center;padding:12px}
+    .pair-box{position:relative;display:inline-flex;border-radius:8px;padding:6px;background:var(--highlight);margin-right:6px}
+    .pair-inner{display:flex;gap:6px}
+    .calculator{width:220px;background:#222;border-radius:10px;padding:10px;color:#fff}
+    .calculator .display{height:36px;background:#333;border-radius:6px;margin-bottom:8px;padding:6px;font-size:18px;display:flex;align-items:center;justify-content:flex-end}
+    .calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .calc-btn{padding:10px;border-radius:8px;border:none;background:#f1f1f1;color:#111;font-weight:700;cursor:pointer}
+    .calc-btn.op{background:#ffd36b}
+    .calc-btn.enter{background:#ff9b6a;color:#fff}
+    .calc-btn.del{background:#bbb}
+    .timer{font-size:20px;font-weight:700}
+    .progress{height:10px;background:#eee;border-radius:8px;overflow:hidden}
+    .progress > div{height:100%;background:linear-gradient(90deg,#0b63d5,#3a9be8);width:0%}
+    @media(max-width:820px){.calculator{width:100%}.play-area{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Aplikasi Bilangan Bulat — Penjumlahan & Pengurangan</h1>
+    </div>
+  </header>
+  <main class="container">
+    <div class="tabs">
+      <div class="tab active" data-tab="konsep">Konsep</div>
+      <div class="tab" data-tab="simulasi">Simulasi</div>
+      <div class="tab" data-tab="latihan">Latihan</div>
+    </div>
+
+    <!-- KONSEP -->
+    <section id="konsep" class="card">
+      <h2>Konsep Bilangan Bulat</h2>
+      <p class="small">Bilangan bulat meliputi bilangan positif (+), nol (0), dan bilangan negatif (ditulis dalam tanda kurung seperti <code>(−5)</code>). Visualisasikan bilangan positif dengan lingkaran biru dan negatif dengan lingkaran merah. Setiap pasangan biru + merah akan saling meniadakan (ditandai menjadi abu-abu).</p>
+      <div class="play-area">
+        <div class="coins-area">
+          <div class="small">Contoh visual: +5 dan −3</div>
+          <div id="conceptRow" style="margin-top:8px"></div>
+        </div>
+        <div style="min-width:220px">
+          <div class="small">Aturan singkat:</div>
+          <ul class="small">
+            <li>Tambah positif → lingkaran biru (+).</li>
+            <li>Tambah negatif → lingkaran merah (−).</li>
+            <li>Setiap pasangan biru + merah akan diberi penanda abu-abu (gray) untuk menunjukkan pembatalan, namun tetap terlihat.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SIMULASI -->
+    <section id="simulasi" class="card hidden">
+      <h2>Simulasi</h2>
+      <div class="flex" style="margin-bottom:10px">
+        <div>
+          <label class="small">Pilihan operasi</label>
+          <div class="controls">
+            <select id="opSelect">
+              <option value="add">Penjumlahan (a + b)</option>
+              <option value="sub">Pengurangan (a - b)</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="small">Bilangan a</label>
+          <div class="controls">
+            <input type="number" id="aInput" value="3" min="-20" max="20" />
+            <input type="range" id="aRange" min="-20" max="20" value="3" />
+          </div>
+        </div>
+        <div>
+          <label class="small">Bilangan b</label>
+          <div class="controls">
+            <input type="number" id="bInput" value="-2" min="-20" max="20" />
+            <input type="range" id="bRange" min="-20" max="20" value="-2" />
+          </div>
+        </div>
+      </div>
+      <div class="flex" style="margin-bottom:8px">
+        <button class="btn" id="runSim">Jalankan Simulasi</button>
+        <button class="ghost" id="clearSim">Bersihkan</button>
+      </div>
+
+      <div style="margin-top:12px">
+        <div class="small">Visualisasi koin (biru = positif, merah = negatif). Pasangan yang saling meniadakan akan berubah warna menjadi abu-abu, tetapi tetap terlihat, sedangkan koin yang tersisa akan turun sedikit untuk menonjolkan sisa.</div>
+        <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
+          <div class="coins-area" style="flex:1; min-width:260px">
+            <div class="small">Operand A</div>
+            <div id="aArea" class="coins-row" style="margin-top:8px"></div>
+          </div>
+          <div class="coins-area" style="flex:1; min-width:260px">
+            <div class="small">Operand B</div>
+            <div id="bArea" class="coins-row" style="margin-top:8px"></div>
+          </div>
+          <div class="coins-area" style="flex-basis:100%">
+            <div class="small">Hasil (setelah pembatalan)</div>
+            <div id="resArea" class="coins-row" style="margin-top:8px"></div>
+            <div style="margin-top:22px" class="result" id="resText"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LATIHAN -->
+    <section id="latihan" class="card hidden">
+      <h2>Latihan Acak</h2>
+      <div class="small">Pilih tingkat kesulitan lalu mulai. Setiap soal ada hitung mundur per soal (Mudah 15s, Sedang 10s, Sukar 5s). Gunakan kalkulator di kanan untuk memasukkan jawaban.</div>
+      <div style="display:flex;gap:12px;margin-top:10px;align-items:center;flex-wrap:wrap">
+        <div>
+          <label class="small">Tingkat</label>
+          <select id="difficulty">
+            <option value="easy">Mudah (15s)</option>
+            <option value="medium" selected>Sedang (10s)</option>
+            <option value="hard">Sukar (5s)</option>
+          </select>
+        </div>
+        <div>
+          <label class="small">Jumlah soal</label>
+          <select id="numQ">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="15">15</option>
+          </select>
+        </div>
+        <div>
+          <button class="btn" id="startQuiz">Mulai Latihan</button>
+        </div>
+      </div>
+
+      <div id="quizBox" class="card hidden" style="margin-top:12px;display:flex;gap:12px">
+        <div style="flex:1">
+          <div id="quizContent"></div>
+          <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+            <button class="ghost" id="prevQ" disabled>Sebelumnya</button>
+            <button class="ghost" id="nextQ" disabled>Berikutnya</button>
+            <button class="btn" id="submitQuiz">Selesai & Lihat Skor</button>
+          </div>
+        </div>
+        <div style="width:240px">
+          <div class="card" style="padding:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div class="small">Waktu</div>
+              <div id="timeRemain" class="timer">--</div>
+            </div>
+            <div class="progress"><div id="progressBar"></div></div>
+            <div style="height:12px"></div>
+            <div id="calculatorWrapper">
+              <div class="calculator">
+                <div class="display" id="calc-display"> </div>
+                <div class="calc-grid">
+                  <button class="calc-btn">7</button>
+                  <button class="calc-btn">8</button>
+                  <button class="calc-btn">9</button>
+                  <button class="calc-btn op">+</button>
+                  <button class="calc-btn">4</button>
+                  <button class="calc-btn">5</button>
+                  <button class="calc-btn">6</button>
+                  <button class="calc-btn op">-</button>
+                  <button class="calc-btn">1</button>
+                  <button class="calc-btn">2</button>
+                  <button class="calc-btn">3</button>
+                  <button class="calc-btn del">del</button>
+                  <button class="calc-btn">0</button>
+                  <button class="calc-btn enter">enter</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="quizResult" class="card hidden" style="margin-top:12px">
+        <h3>Hasil Latihan</h3>
+        <div id="scoreText"></div>
+        <div style="margin-top:8px"><button class="btn" id="retryQuiz">Ulangi</button></div>
+      </div>
+    </section>
+
+    <footer>Created for practice — gunakan untuk membantu memahami konsep bilangan bulat.</footer>
+  </main>
+
+  <script>
+    // Tab handling
+    document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));
+      document.getElementById(t.dataset.tab).classList.remove('hidden');
+    }));
+
+    // Utility
+    function clamp(n,min,max){return Math.max(min,Math.min(max,n))}
+    function formatNum(n){ return (n<0)? '('+n+')' : n }
+
+    // CONCEPT example
+    function renderConcept(a,b){
+      const container = document.getElementById('conceptRow'); container.innerHTML='';
+      const pos = Math.max(0,a>0?a:0) + Math.max(0,b>0?b:0);
+      const neg = Math.max(0,a<0?Math.abs(a):0) + Math.max(0,b<0?Math.abs(b):0);
+      const pairs = Math.min(pos,neg);
+      if(pairs>0){
+        const pEls = document.createElement('div'); pEls.className='pair-box';
+        for(let i=0;i<pairs;i++){
+          const inner = document.createElement('span'); inner.className='pair-inner';
+          const c1 = document.createElement('div'); c1.className='coin pos'; c1.style.width='28px'; c1.style.height='28px';
+          const c2 = document.createElement('div'); c2.className='coin neg'; c2.style.width='28px'; c2.style.height='28px';
+          inner.appendChild(c1); inner.appendChild(c2);
+          pEls.appendChild(inner);
+        }
+        container.appendChild(pEls);
+      }
+      const remPos = pos - pairs;
+      for(let i=0;i<remPos;i++){ const c=document.createElement('div'); c.className='coin pos'; c.style.marginLeft='6px'; container.appendChild(c); }
+      const remNeg = neg - pairs;
+      for(let i=0;i<remNeg;i++){ const c=document.createElement('div'); c.className='coin neg'; c.style.marginLeft='6px'; container.appendChild(c); }
+      if(pos===0 && neg===0){ const z = document.createElement('div'); z.className='small'; z.textContent='(nol)'; container.appendChild(z);} 
+    }
+    renderConcept(5,-3);
+
+    // SIMULASI
+    const aInput = document.getElementById('aInput');
+    const aRange = document.getElementById('aRange');
+    const bInput = document.getElementById('bInput');
+    const bRange = document.getElementById('bRange');
+    const aArea = document.getElementById('aArea');
+    const bArea = document.getElementById('bArea');
+    const resArea = document.getElementById('resArea');
+    const resText = document.getElementById('resText');
+
+    aInput.addEventListener('input',e=>{aRange.value = e.target.value});
+    aRange.addEventListener('input',e=>{aInput.value = e.target.value});
+    bInput.addEventListener('input',e=>{bRange.value = e.target.value});
+    bRange.addEventListener('input',e=>{bInput.value = e.target.value});
+
+    function renderCoinsSimple(container, n){ container.innerHTML=''; const abs=Math.min(Math.abs(n),20); if(n===0){const z=document.createElement('div');z.className='small';z.textContent='(nol)';container.appendChild(z);return;} for(let i=0;i<abs;i++){const c=document.createElement('div');c.className='coin '+(n>0?'pos':'neg');container.appendChild(c);} }
+
+    document.getElementById('clearSim').addEventListener('click',()=>{ aArea.innerHTML=''; bArea.innerHTML=''; resArea.innerHTML=''; resText.textContent=''; });
+
+    function visualizeOperands(a,b,op){
+      aArea.innerHTML=''; bArea.innerHTML=''; resArea.innerHTML=''; resText.innerHTML='';
+      renderCoinsSimple(aArea,a);
+      renderCoinsSimple(bArea,b);
+      let A = a; let B = b; if(op==='sub') B = -B;
+      const pos = Math.max(0, A>0?A:0) + Math.max(0, B>0?B:0);
+      const neg = Math.max(0, A<0?Math.abs(A):0) + Math.max(0, B<0?Math.abs(B):0);
+      for(let i=0;i<pos;i++){const c=document.createElement('div');c.className='coin pos';resArea.appendChild(c)}
+      for(let i=0;i<neg;i++){const c=document.createElement('div');c.className='coin neg';resArea.appendChild(c)}
+      const pairs = Math.min(pos,neg);
+      if(pairs>0){
+        const children = Array.from(resArea.children);
+        let marked=0; for(let ch of children){ if(ch.classList && ch.classList.contains('coin') && ch.classList.contains('pos') && marked<pairs){ ch.classList.add('gray'); marked++; } }
+        marked=0; for(let i=children.length-1;i>=0;i--){ const ch=children[i]; if(ch.classList && ch.classList.contains('coin') && ch.classList.contains('neg') && marked<pairs){ ch.classList.add('gray'); marked++; } }
+      }
+      // wait for color transition (1s), then drop remaining and show result
+      setTimeout(()=>{
+        const remaining = Array.from(resArea.children).filter(ch=>ch.classList && !ch.classList.contains('gray'));
+        remaining.forEach((el,idx)=>{ setTimeout(()=>{ el.style.transform = 'translateY(18px)'; }, idx*60); });
+        setTimeout(()=>{
+          const result = A + B;
+          resText.innerHTML = 'Hasil = ' + result;
+          resText.style.color = result>0? 'var(--pos)': (result<0? 'var(--neg)':'#333');
+          if(op==='sub'){
+            const negB = -b;
+            const expl = document.createElement('div'); expl.className='small'; expl.style.marginTop='8px';
+            expl.textContent = `Pengurangan diubah menjadi penjumlahan: ${a} + (${negB}) = ${a + negB}`;
+            resText.appendChild(expl);
+          }
+        }, 600 + (remaining.length*60));
+      }, 1000);
+    }
+
+    document.getElementById('runSim').addEventListener('click',()=>{ const a = Number(aInput.value)||0; const b = Number(bInput.value)||0; const op = document.getElementById('opSelect').value; visualizeOperands(a,b,op); });
+
+    // QUIZ
+    let quiz = {questions:[],answers:[],userAns:[],current:0, timer:null, timeLeft:0, timePerQ:5, started:false};
+    function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min }
+    function genQuestions(n, min=-20, max=20){
+      quiz.questions = [];
+      quiz.answers = [];
+      quiz.userAns = Array(n).fill('');
+      function rnd(){ return Math.floor(Math.random()*(max-min+1))+min; }
+      for(let i=0;i<n;i++){
+        const a = rnd(); const b = rnd(); const op = Math.random()<0.5?'+':'-';
+        quiz.questions.push({a,b,op});
+        quiz.answers.push(op==='+'? a+b: a-b);
+      }
+    }
+
+    function renderQuiz(){
+      if(!quiz.questions || quiz.questions.length===0) return; // nothing to render
+      // update nav buttons state
+      document.getElementById('prevQ').disabled = (quiz.current === 0) || !quiz.started;
+      document.getElementById('nextQ').disabled = (quiz.current === quiz.questions.length-1) || !quiz.started;
+      const box=document.getElementById('quizContent'); box.innerHTML='';
+      const q = quiz.questions[quiz.current];
+      const idx = quiz.current+1;
+      const el = document.createElement('div');
+      el.innerHTML = '<div class="problem small">Soal '+idx+' dari '+quiz.questions.length+'</div><div style="font-size:20px;font-weight:700;margin-bottom:8px">'+formatNum(q.a)+' '+q.op+' '+formatNum(q.b)+' = ?</div>';
+      const ansPreview=document.createElement('div'); ansPreview.className='small'; ansPreview.textContent='Gunakan kalkulator di kanan untuk memasukkan jawaban, atau tekan enter'; el.appendChild(ansPreview);
+      box.appendChild(el);
+      document.getElementById('quizBox').classList.remove('hidden'); document.getElementById('quizResult').classList.add('hidden');
+      // reset calc display for new question
+      calcBuffer = '';
+      updateCalcDisplay('');
+      // start timer
+      startTimer();
+    }
+
+    document.getElementById('startQuiz').addEventListener('click',()=>{
+      const n = Number(document.getElementById('numQ').value) || 10;
+      const diff = document.getElementById('difficulty').value;
+      let min=-8, max=8;
+      if(diff==='medium'){ min=-12; max=12; }
+      if(diff==='hard'){ min=-20; max=20; }
+      genQuestions(n, min, max);
+      quiz.current = 0;
+      quiz.timePerQ = diff==='easy'?15:(diff==='medium'?10:5);
+      quiz.started = true;
+      // ensure nav buttons initial state
+      document.getElementById('prevQ').disabled = true;
+      document.getElementById('nextQ').disabled = (n<=1);
+      renderQuiz();
+    });
+
+    // nav buttons
+    document.getElementById('nextQ').addEventListener('click',()=>{
+      // save current answer if any
+      const val = getCalcValue(); if(val!=='') quiz.userAns[quiz.current] = Number(val);
+      stopTimer(); calcBuffer=''; updateCalcDisplay('');
+      goNext();
+    });
+    document.getElementById('prevQ').addEventListener('click',()=>{
+      const val = getCalcValue(); if(val!=='') quiz.userAns[quiz.current] = Number(val);
+      if(quiz.current>0){ quiz.current--; }
+      stopTimer(); renderQuiz();
+    });
+    document.getElementById('submitQuiz').addEventListener('click', ()=>{ showResult(); });
+    document.getElementById('retryQuiz').addEventListener('click', ()=>{ document.getElementById('quizBox').classList.add('hidden'); document.getElementById('quizResult').classList.add('hidden'); quiz.started=false; });
+
+    function goNext(){
+      if(quiz.current < quiz.questions.length-1){
+        quiz.current++;
+        renderQuiz();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult(){
+      stopTimer();
+      quiz.started = false;
+      let correct=0; const details=[];
+      for(let i=0;i<quiz.questions.length;i++){
+        const user = quiz.userAns[i];
+        const ok = user === quiz.answers[i];
+        if(ok) correct++;
+        details.push({q:quiz.questions[i],user:quiz.userAns[i],ans:quiz.answers[i],ok});
+      }
+      const score = Math.round((correct/quiz.questions.length)*100);
+      document.getElementById('scoreText').innerHTML = '<div class="small">Skor: <strong>'+score+'</strong> (%). Jawaban benar: <strong>'+correct+'</strong> dari '+quiz.questions.length+'.</div>';
+      const list = document.createElement('div'); list.className='quiz-list';
+      details.forEach((d,idx)=>{
+        const it = document.createElement('div'); it.className='quiz-item';
+        it.innerHTML = '<div class="small">Soal '+(idx+1)+': '+formatNum(d.q.a)+' '+d.q.op+' '+formatNum(d.q.b)+' = '+d.ans+'</div><div class="small">'+(d.ok? 'Benar':'Salah (Anda: '+ (d.user===''?'kosong':d.user) +')')+'</div>';
+        list.appendChild(it);
+      });
+      document.getElementById('quizContent').innerHTML=''; document.getElementById('quizContent').appendChild(list);
+      document.getElementById('quizResult').classList.remove('hidden');
+      // disable nav
+      document.getElementById('prevQ').disabled = true;
+      document.getElementById('nextQ').disabled = true;
+    }
+
+    // TIMER
+    function startTimer(){ stopTimer(); quiz.timeLeft = quiz.timePerQ; document.getElementById('timeRemain').textContent = quiz.timeLeft + 's'; updateProgress(); quiz.timer = setInterval(()=>{ quiz.timeLeft--; if(quiz.timeLeft<=0){ // timeout -> record empty and advance
+            if(quiz.userAns[quiz.current]==='' || typeof quiz.userAns[quiz.current] === 'undefined') quiz.userAns[quiz.current] = '';
+            stopTimer(); // prevent overlap
+            setTimeout(()=>{ goNext(); }, 250);
+          } else { document.getElementById('timeRemain').textContent = quiz.timeLeft + 's'; updateProgress(); } },1000); }
+    function stopTimer(){ if(quiz.timer) clearInterval(quiz.timer); quiz.timer=null; }
+    function updateProgress(){ const pct = (quiz.timeLeft/quiz.timePerQ)*100; document.getElementById('progressBar').style.width = pct + '%'; }
+
+    // CALCULATOR logic
+    const calcDisplay = document.getElementById('calc-display');
+    let calcBuffer = '';
+    function updateCalcDisplay(val){ calcDisplay.textContent = val; }
+    function getCalcValue(){ return calcBuffer.trim(); }
+    let advancing = false; // guard to prevent double-advance
+    function pressCalc(key){
+      if(key==='del'){ calcBuffer = ''; updateCalcDisplay(calcBuffer); return; }
+      if(key==='enter'){
+        if(advancing) return; // ignore duplicate enters
+        advancing = true;
+        const cur = calcBuffer.trim(); if(cur!=='') quiz.userAns[quiz.current] = Number(cur);
+        stopTimer(); calcBuffer = ''; updateCalcDisplay('');
+        // small delay to ensure UI updates before advancing
+        setTimeout(()=>{ goNext(); advancing = false; }, 80);
+        return;
+      }
+      if(key==='+' || key==='-'){
+        if(calcBuffer===''){ calcBuffer = key; updateCalcDisplay(calcBuffer); return; }
+        return;
+      }
+      // digit
+      calcBuffer += key; updateCalcDisplay(calcBuffer);
+    }
+
+    document.querySelectorAll('.calc-btn').forEach(b=>b.addEventListener('click',(e)=>{ const k = e.target.textContent; if(k==='del') pressCalc('del'); else if(k==='enter') pressCalc('enter'); else pressCalc(k); }));
+
+    document.addEventListener('keydown',e=>{
+      if(document.getElementById('quizBox').classList.contains('hidden')) return;
+      if(e.key>='0' && e.key<='9'){ pressCalc(e.key); }
+      else if(e.key==='-'|| e.key==='+'){ pressCalc(e.key); }
+      else if(e.key==='Enter'){ e.preventDefault(); pressCalc('enter'); }
+      else if(e.key==='Backspace'){ pressCalc('del'); }
+    });
+
+  </script>
+</body>
+</html>
